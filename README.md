@@ -52,6 +52,7 @@ CPU：CORE i7 7th
 ![ChaosLauncher](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/server/ref/ref1.png?raw=true)  
 
 出现如下图所示情况，不用怀疑，是ok的，Server端等待Client输入，故暂时无响应。
+
 ![等待输入](https://raw.githubusercontent.com/tjuHaoXiaotian/SC1/master/install_env/server/problem/not_response.png)
 ---
 Server端安装到此结束。
