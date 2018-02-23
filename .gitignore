@@ -1,0 +1,4 @@
+.idea/*
+agents/**/checkpoint*
+*.pyc
+agents/coma.DefeatRoaches/*
