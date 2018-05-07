@@ -54,7 +54,7 @@ def make_conv_bn_relu(name, input, ks, stride, is_training, mean=0., stddev=0.1)
 #     with tf.name_scope(name):
 #         with tf.variable_scope(name):
 #             # w = tf.get_variable('%s-w' % name, shape=ks, initializer=tf.truncated_normal_initializer(mean=mean, stddev=stddev))
-#             w = tf.get_variable('%s-w' % name, shape=ks, initializer=tf.contrib.layers.xavier_initializer())
+#             w = tf.get_variable('%s-w' % name, shape=ks, initializer=tc.layers.xavier_initializer())
 #             out = tf.matmul(input, w, name='%s-mat' % name)
 #
 #             if batch_norm:
@@ -73,7 +73,7 @@ def make_fc(name, input, units_num, activation_fn=None, batch_norm=False):
     with tf.name_scope(name):
         with tf.variable_scope(name):
             w = tf.get_variable('%s-w' % name, shape=[input.shape[-1], units_num],
-                                initializer=tf.contrib.layers.xavier_initializer())
+                                initializer=tc.layers.xavier_initializer())
             out = tf.matmul(input, w, name='%s-mat' % name)
             if batch_norm:
                 out = tc.layers.layer_norm(out, center=True, scale=True)
@@ -90,7 +90,7 @@ def make_fc_with_s_a(name, input, units_num, activation_fn=None, batch_norm=Fals
         with tf.variable_scope(name):
             # w = tf.get_variable('%s-w' % name, shape=ks, initializer=tf.truncated_normal_initializer(mean=mean, stddev=stddev))
             w = tf.get_variable('%s-w' % name, shape=[input.shape[-1], units_num],
-                                initializer=tf.contrib.layers.xavier_initializer())
+                                initializer=tc.layers.xavier_initializer())
             out = tf.matmul(input, w, name='%s-mat' % name)
 
             if batch_norm:
@@ -108,7 +108,7 @@ def make_fc_with_s_a(name, input, units_num, activation_fn=None, batch_norm=Fals
 def make_dense(name, input, hidden_unit_size, batch_norm, activation_fn):
     with tf.name_scope(name):
         with tf.variable_scope(name):
-            out = tf.layers.dense(input, hidden_unit_size, kernel_initializer=tf.contrib.layers.xavier_initializer())
+            out = tf.layers.dense(input, hidden_unit_size, kernel_initializer=tc.layers.xavier_initializer())
             if batch_norm:
                 out = tc.layers.layer_norm(out, center=True, scale=True)
             if activation_fn:
@@ -119,9 +119,9 @@ def make_dense(name, input, hidden_unit_size, batch_norm, activation_fn):
 def make_dense_with_s_a(name, s, a, hidden_unit_size, batch_norm, activation_fn):
     with tf.name_scope(name):
         with tf.variable_scope(name):
-            s = tf.layers.dense(s, hidden_unit_size, kernel_initializer=tf.contrib.layers.xavier_initializer(),
+            s = tf.layers.dense(s, hidden_unit_size, kernel_initializer=tc.layers.xavier_initializer(),
                                 name='{}-s'.format(name))
-            a = tf.layers.dense(a, hidden_unit_size, kernel_initializer=tf.contrib.layers.xavier_initializer(),
+            a = tf.layers.dense(a, hidden_unit_size, kernel_initializer=tc.layers.xavier_initializer(),
                                 name='{}-a'.format(name))
             out = s + a
             if batch_norm:
@@ -129,3 +129,41 @@ def make_dense_with_s_a(name, s, a, hidden_unit_size, batch_norm, activation_fn)
             if activation_fn:
                 out = activation_fn(out)
             return out
+
+
+def make_lstm_layer(name, s, lstm_size, layer_num, sequence_len, keep_prob):
+    # RNN cell
+    def make_cell(rnn_size, keep_prob):
+        # Use a basic LSTM cell
+        # lstm = tc.rnn.BasicLSTMCell(COMA_CFG.lstm_size, forget_bias=1.0, state_is_tuple=True)
+        enc_cell = tc.rnn.LSTMCell(rnn_size,
+                                           initializer=tf.random_uniform_initializer(-0.1, 0.1, seed=2))
+        # Add dropout to the cell
+        drop = tc.rnn.DropoutWrapper(enc_cell, output_keep_prob=keep_prob)
+        return drop
+
+    ### Build the LSTM Cell
+    def build_cell(lstm_size, keep_prob):
+        # Use a basic LSTM cell
+        lstm = tc.rnn.BasicLSTMCell(lstm_size)
+
+        # Add dropout to the cell
+        drop = tc.rnn.DropoutWrapper(lstm, output_keep_prob=keep_prob)
+        return drop
+
+    with tf.name_scope(name):
+        with tf.variable_scope(name):
+            # stack up multiple LSTM layers
+            cell = tc.rnn.MultiRNNCell([build_cell(lstm_size, keep_prob) for _ in range(layer_num)])
+            # initial_state = cell.zero_state(batch_size, tf.float32)
+            outputs, final_state = tf.nn.dynamic_rnn(cell=cell,
+                                                     inputs=s,
+                                                     # sequence_length=sequence_len,
+                                                     dtype=tf.float32)
+            # (LSTMStateTuple(c=<tf.Tensor 'Actor/online_actor/rnn/while/Exit_3:0' shape=(?, 32) dtype=float32>, h=<tf.Tensor 'Actor/online_actor/rnn/while/Exit_4:0' shape=(?, 32) dtype=float32>),)
+            # print(final_state)
+            # Tensor("Actor/online_actor/rnn/transpose_1:0", shape=(?, 9, 32), dtype=float32)
+            # print(outputs)
+            # 直接调用final_state 中的 h_state (final_state[1]) or outputs[:, -1, :] 来进行运算:
+            state_feature = final_state[0][1]
+            return state_feature

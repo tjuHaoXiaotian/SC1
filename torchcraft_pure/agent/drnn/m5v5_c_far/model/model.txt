@@ -1,0 +1,24 @@
+model 0: episodes 501, steps 15171, win rate 5/500
+model 0 test: episodes 601, steps 18937, win rate 3/100
+model 1: episodes 1101, steps 37522, win rate 26/500
+model 1 test: episodes 1201, steps 41135, win rate 0/100
+model 2: episodes 1701, steps 57486, win rate 33/500
+model 2 test: episodes 1801, steps 60475, win rate 93/100
+model 3: episodes 2301, steps 75331, win rate 43/500
+model 3 test: episodes 2401, steps 78757, win rate 15/100
+model 4: episodes 2901, steps 96845, win rate 89/500
+model 4 test: episodes 3001, steps 100102, win rate 42/100
+model 5: episodes 3501, steps 116697, win rate 221/500
+model 5 test: episodes 3601, steps 119623, win rate 86/100
+model 6: episodes 4101, steps 137061, win rate 253/500
+model 6 test: episodes 4201, steps 140772, win rate 60/100
+model 7: episodes 4701, steps 156817, win rate 319/500
+model 7 test: episodes 4801, steps 159925, win rate 88/100
+model 8: episodes 5301, steps 175711, win rate 377/500
+model 8 test: episodes 5401, steps 178648, win rate 99/100
+model 9: episodes 5901, steps 194001, win rate 431/500
+model 9 test: episodes 6001, steps 196955, win rate 96/100
+
+|| model 8 test win rate : | episodes 101 | steps 3155 | win rate 98/100 ||
+|| model 8 test win rate : | episodes 101 | steps 3016 | win rate 99/100 ||
+|| model 8 test win rate : | episodes 101 | steps 2960 | win rate 96/100 ||

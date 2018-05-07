@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from util.segment_tree import SumSegmentTree, MinSegmentTree
+from torchcraft_pure.model.util.segment_tree import SumSegmentTree, MinSegmentTree
 
 
 class ReplayBuffer(object):
@@ -21,8 +21,8 @@ class ReplayBuffer(object):
     def __len__(self):
         return len(self._storage)
 
-    def add(self, obs_t, action, reward, obs_tp1, done):
-        data = (obs_t, action, reward, obs_tp1, done)
+    def add(self, obs_t, action, reward, obs_tp1, done, still_alive):
+        data = (obs_t, action, reward, obs_tp1, done, still_alive)
 
         if self._next_idx >= len(self._storage):
             self._storage.append(data)
@@ -34,7 +34,7 @@ class ReplayBuffer(object):
         obses_t, actions, rewards, obses_tp1, dones = [], [], [], [], []
         for i in idxes:
             data = self._storage[i]
-            obs_t, action, reward, obs_tp1, done = data
+            obs_t, action, reward, obs_tp1, done, still_alive = data
             # obses_t.append(np.array(obs_t, copy=False))
             obses_t.append(obs_t)
             actions.append(action)
@@ -44,7 +44,14 @@ class ReplayBuffer(object):
         return np.array(obses_t), np.array(actions), np.array(rewards), np.array(obses_tp1), np.array(dones)
 
     def make_index(self, batch_size):
-        return [random.randint(0, len(self._storage) - 1) for _ in range(batch_size)]
+        sampled_idx = []
+        while len(sampled_idx) < batch_size:
+            idx = random.randint(0, len(self._storage) - 1)
+            if self._storage[idx][-1]: # still alive
+                sampled_idx.append(idx)
+        # return [random.randint(0, len(self._storage) - 1) for _ in range(batch_size)]
+        # print(len(sampled_idx))
+        return sampled_idx
 
     def make_latest_index(self, batch_size):
         idx = [(self._next_idx - 1 - i) % self._maxsize for i in range(batch_size)]
