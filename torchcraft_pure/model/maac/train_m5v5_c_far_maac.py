@@ -131,8 +131,8 @@ if __name__ == '__main__':
                     agent.experience(o_n[idx], one_hot_actions[idx], r_n[idx], o_n_next[idx], d_n[idx], True)
                 else:
                     # 当前已经死亡单位， replay buffer 默认存 0
-                    agent.experience(np.zeros(shape=[180], dtype=np.float32), np.zeros(shape=[10], dtype=np.float32), 0,
-                                     np.zeros(shape=[180], dtype=np.float32), True, False)
+                    agent.experience(np.zeros(shape=[single_state_dim * agent_num], dtype=np.float32), np.zeros(shape=[10], dtype=np.float32), 0,
+                                     np.zeros(shape=[single_state_dim * agent_num], dtype=np.float32), True, False)
 
             o_n = o_n_next
             done = env.is_end()

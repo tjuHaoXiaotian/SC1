@@ -1,5 +1,5 @@
 from torchcraft_pure.model.util.nn_util import *
-from torchcraft_pure.model.util.replay_buffer import ReplayBuffer
+from torchcraft_pure.model.maac.replay_buffer import ReplayBuffer
 import numpy as np
 
 
@@ -221,10 +221,12 @@ class MAAC(object):
             obs_n.append(obs)
             obs_next_n.append(obs_next)
             act_n.append(act)
+
             # TODO: 这里有的单已经死了（act_next 最好是 0，这里不太对）
             act_next_n.append(sess.run(agent_list[i].target_action_output, feed_dict={
                 agent_list[i].actor_state_nxt_input: obs_next
             }))
+
             # act_next_n.append(agent_list[i].target_action_output)
             # act_next_n_state_ph.append(agent_list[i].actor_state_nxt_input)
         # action_nxt_n_feed = {key: value for key, value in zip(act_next_n_state_ph, obs_next_n)}

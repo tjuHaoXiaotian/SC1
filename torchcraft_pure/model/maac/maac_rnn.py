@@ -1,5 +1,5 @@
 from torchcraft_pure.model.util.nn_util import *
-from torchcraft_pure.model.util.replay_buffer import ReplayBuffer
+from torchcraft_pure.model.maac.replay_buffer import ReplayBuffer
 import numpy as np
 
 

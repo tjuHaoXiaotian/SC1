@@ -105,7 +105,7 @@ class Agent(object):
 
 class BaseEnv(gym.Env):
 
-    def __init__(self, map='Maps/BroodWar/micro/m5v5_c_far.scm', battle_max_steps=200):
+    def __init__(self, map='Maps/BroodWar/micro/m5v5_c_far.scm', battle_max_steps=50, goal_max_steps=3):
         # init default config
         self.default_config = {
             "hostname": "127.0.0.1",
@@ -117,6 +117,7 @@ class BaseEnv(gym.Env):
         self.init_action_observation_space()
         # set battle max step
         self.battle_max_steps = battle_max_steps
+        self.goal_max_steps = goal_max_steps
         # init the server connection
         _ = self.__connect()
 
@@ -185,6 +186,7 @@ class BaseEnv(gym.Env):
         alive_agents = alive_friends + alive_enemies
         # the total number of agents
         self.agent_num = len(alive_agents)
+        self.friend_num = len(alive_friends)
         # init n agents
         self.agents = [Agent(id) for id in range(self.agent_num)]
         # init agents' record
@@ -200,6 +202,7 @@ class BaseEnv(gym.Env):
         self.type_num = len(type_set)
         # reset battle step to 0
         self.battle_step = 0
+        self.reset_goal_step()
 
         obs_n = []
         for agent in self.agents:
@@ -213,6 +216,8 @@ class BaseEnv(gym.Env):
         :return: [obs_n, reward_n, done_n, info_n], [global_observation, global reward, done, info]
         '''
         self.battle_step += 1
+        # update goal step
+        self.update_goal_step()
         # execute actions
         self.cl.send(actions)
 
@@ -265,9 +270,11 @@ class BaseEnv(gym.Env):
 
         # prepare global observations
         global_obs = self.make_observation(None, all_agents=self.agents, global_view=True, one_hot=True)
-        global_reward = self.make_reward(self.agents, opponent_view=False)
+        global_reward, _ = self.make_reward(self.agents, opponent_view=False)
         done = self.is_end()
-        info = {}
+        info = {
+            'killed_enemy_num': _
+        }
         return [obs_n, reward_n, done_n, info_n], [global_obs, global_reward, done, info]
 
     def is_end(self):
@@ -288,6 +295,15 @@ class BaseEnv(gym.Env):
 
     def is_win(self):
         return self.inner_state.battle_won
+
+    def reset_goal_step(self):
+        self.goal_step = 0
+
+    def update_goal_step(self):
+        self.goal_step += 1
+
+    def is_goal_reached(self):
+        return self.goal_step == self.goal_max_steps
 
     def print_units(self, state):
         alive_friends = state.units[0]
@@ -486,7 +502,7 @@ class BaseEnv(gym.Env):
         action[action_id] = 1
         return action
 
-    def convert_discrete_action_2_sc1_action(self, agent_id, action_id):
+    def convert_discrete_action_2_sc1_action(self, agent_id, action_id, attack_target_id=None):
         '''
         convert [0-9] to bwapi action
         0: stop
@@ -494,6 +510,7 @@ class BaseEnv(gym.Env):
         > 5: attack id
         :param agent_id:
         :param action_id:
+        :param attack_target_id: a specific target to attack
         :return:
         '''
         _SCREEN_MIN = [48, 112]
@@ -527,7 +544,10 @@ class BaseEnv(gym.Env):
                 target_location[1]
             ]
         else:
-            target_id = action_id - 5 + 5
+            if attack_target_id is None:
+                target_id = action_id - 5 + self.friend_num
+            else:
+                target_id = attack_target_id + self.friend_num
             if not self.agents[target_id].is_dead:
                 return [
                     tcc.command_unit_protected,
