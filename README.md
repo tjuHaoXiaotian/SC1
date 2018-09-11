@@ -196,7 +196,7 @@ make DESTDIR=xxxx install
 ### 安装 [zero-MQ](https://github.com/zeromq/zeromq4-1)
 下载release版本安装 [GitHub ](https://github.com/zeromq/zeromq4-1/releases)
 ```
-configure --perfix=xxxx
+configure --prefix=xxxx
 make install
 ```
 #### Notice
