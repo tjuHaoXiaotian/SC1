@@ -52,7 +52,6 @@ CPU：CORE i7 7th
 ![ChaosLauncher](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/server/ref/ref1.png?raw=true)  
 
 出现如下图所示情况，不用怀疑，是ok的，Server端等待Client输入，故暂时无响应。
-
 ![等待输入](https://raw.githubusercontent.com/tjuHaoXiaotian/SC1/master/install_env/server/problem/not_response.png)
 ---
 Server端安装到此结束。
@@ -64,6 +63,7 @@ TorchCraft is a BWAPI module that sends StarCraft data out over a ZMQ connection
 
 可以发现，TorchCraft 并没有直接提供Windows下python扩展包，从原码包直接编译安装需要c/c++编译环境，所以相对于Linux下，Windows安装过程较为曲折。
 ```
+
 ### 编译安装
 
 #### 所需文件下载（原码安装，需自行编译）
@@ -89,15 +89,17 @@ TorchCraft 用到了 c++ 11，msvs 对 c++11 支持很不友好，故安装 MinG
 #### 编译 Zeromq
 * TorchCraft编译安装，只用到 libzmq.dll和 zmq.h
 官方已给出 windows下的 [Stable Release 4.0.4 ](http://zeromq.org/distro:microsoft-windows)，自行下载安装即可。  
-* TorchCraft的发行版zip包中，bin目录下有 libzmq.dll。
-###### 自行编译安装详见以下两篇博客
+* TorchCraft的发行版zip包中，bin目录下有 libzmq.dll。  
+
+**自行编译安装详见以下两篇博客**
 * [win10下Visual Studio 2015，C++ x64编译zmq](https://www.cnblogs.com/MrOuqs/p/5801333.html)
 * [Visual Studio 2015下编译zmq项目下其他项目踩进的项目引用坑](https://www.cnblogs.com/MrOuqs/p/5812040.html)
 ---
 #### 编译 zstd
 * TorchCraft编译安装，只用到了 libzstd.dll 和 zstd.h。
-* 官方已给出 windows下的发行版本 [releases](https://github.com/facebook/zstd/releases)，自行下载安装即可。
-###### 自行编译安装详见 zstd github
+* 官方已给出 windows下的发行版本 [releases](https://github.com/facebook/zstd/releases)，自行下载安装即可。  
+
+**自行编译安装详见 zstd github**
 * [github 链接](https://github.com/facebook/zstd#visual-studio-windows)
 ---
 #### 修改 python distutils 默认编译器配置为 MinGW-w64
@@ -109,7 +111,8 @@ TorchCraft 用到了 c++ 11，msvs 对 c++11 支持很不友好，故安装 MinG
   compiler = mingw32
   ```
 * 编辑 `cygwinccompiler.py`
-  修改 `class Mingw32CCompiler(CygwinCCompiler)`
+  修改 `class Mingw32CCompiler(CygwinCCompiler)`   
+
   ```
     # 修改 1: 
     if sys.maxsize == 2**31 - 1:
@@ -170,3 +173,46 @@ Client端安装到此结束。
 
 ![image](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/client/ref/success_end.png?raw=true)
 ![image](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/client/ref/success_end2.png?raw=true)
+
+
+---
+### 补充基于linux client端的client安装 `2018-09-11`
+```
+训练算法还是放在服务端比较好，server端windows只用来运行环境。
+```
+---
+
+## linux 安装 Client
+### 安装 [zstd](https://github.com/facebook/zstd)（压缩算法）
+
+ 下载release版本安装 [GitHub](https://github.com/facebook/zstd/releases)
+```
+直接运行 make install (create and install zstd cli, library and man pages)
+
+我这里是机器上没有root权限，所以要指定目录安装。
+make DESTDIR=xxxx install
+```
+
+### 安装 [zero-MQ](https://github.com/zeromq/zeromq4-1)
+下载release版本安装 [GitHub ](https://github.com/zeromq/zeromq4-1/releases)
+```
+configure --perfix=xxxx
+make install
+```
+#### Notice
+注意，GCC/G\+\+编译时只会查找系统默认的include和link的路径（`/usr/lib:/usr/local/lib等`），这里如果不是以root身份安装，需要手动将zstd与zeromq的include（c/c++头文件）、lib（.a/.so 静态链接库，动态链接库）等目录位置添加到相应的环境变量中。 后面编译安装TorchCraft Client需要。
+
+详情参考：
+- [Linux 非root用户怎么make安装软件](https://www.jianshu.com/p/0ef082354fc9)
+- [linux下C/C++编译时系统搜索 include 和 链接库 文件路径的指定](http://www.cnblogs.com/bigfi/p/9487427.html)
+- [linux 中的.so和.a文件](https://blog.csdn.net/nieyinyin/article/details/6890557)
+
+环境变量参考样例：
+![环境变量配置样例](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/client/ref/env_path.png?raw=true)
+
+### 安装 [TorchCraft Client](https://github.com/TorchCraft/TorchCraft)
+下载release版本安装 [GitHub ](https://github.com/TorchCraft/TorchCraft/releases)
+- 确保 zstd与zeromq相关头文件及库文件已添加至相应环境变量中。
+- 下载并解压TorchCraft压缩包，切入主目录，Python setup: `pip install pybind11 && pip install`.
+
+![image](https://raw.githubusercontent.com/tjuHaoXiaotian/SC1/master/install_env/client/ref/linux_torchcraft.png)
