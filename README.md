@@ -207,7 +207,7 @@ make install
 - [linux下C/C++编译时系统搜索 include 和 链接库 文件路径的指定](http://www.cnblogs.com/bigfi/p/9487427.html)
 - [linux 中的.so和.a文件](https://blog.csdn.net/nieyinyin/article/details/6890557)
 
-环境变量参考样例：
+环境变量参考样例：   
 ![环境变量配置样例](https://github.com/tjuHaoXiaotian/SC1/blob/master/install_env/client/ref/env_path.png?raw=true)
 
 ### 安装 [TorchCraft Client](https://github.com/TorchCraft/TorchCraft)
